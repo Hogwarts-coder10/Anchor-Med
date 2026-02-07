@@ -1,0 +1,26 @@
+# --- Dependencies ---
+node_modules/
+/venv
+/env
+__pycache__/
+*.py[cod]
+
+# --- Build Artifacts ---
+dist/
+build/
+.cache/
+
+# --- OS Junk ---
+.DS_Store
+Thumbs.db
+
+# --- Secrets & Config ---
+.env
+.vscode/
+.idea/
+
+# --- Database (Don't upload your live data!) ---
+/data/*.wal
+/data/*.db
+# Keep the folder, ignore the content (optional)
+!/data/.gitkeep
