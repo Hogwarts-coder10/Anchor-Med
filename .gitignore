@@ -24,3 +24,15 @@ Thumbs.db
 /data/*.db
 # Keep the folder, ignore the content (optional)
 !/data/.gitkeep
+
+# Ignore build artifacts
+dist/
+build/
+node_modules/
+
+# Ignore binaries and databases
+*.exe
+*.dll
+*.wal
+*.db
+__pycache__/
