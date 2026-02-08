@@ -82,3 +82,39 @@ pip install flask flask-cors python-dotenv requests
 **[V SS Karthik]** - *Lead Engineer (Backend Architecture, B-Tree Engine, WAL Implementation)*
 * **[Mouktika]** - *Frontend Developer / UI Design*
 * **[Avinash]** - *Flask and WAL Implementation, Frontend Developer / UI Design*
+* 
+
+## Project Status
+
+Anchor-Med is an active systems project.  
+Core functionality (custom B-Tree storage, WAL-based crash recovery, and
+Flask integration) is implemented and manually stress-tested.
+
+Known limitations and planned improvements are tracked transparently
+in the GitHub Issues tab.
+
+
+## Crash Recovery Testing
+
+The database engine has been manually stress-tested for crash recovery.
+
+Testing methodology:
+- Continuous insert and update operations under load
+- Backend process forcefully terminated at random points
+- Application restarted to trigger WAL replay
+
+Results:
+- WAL replay consistently restored a valid B-Tree state
+- No partial or corrupted records observed
+- Operations were either fully applied or safely ignored
+
+Automated crash-recovery tests are planned as a future improvement.
+
+
+## Known Limitations
+
+Some advanced features (checkpointing, transaction boundaries, and
+full duplicate-key enforcement) They are under active development.
+
+Please have a look at the Issues tab for detailed, tracked limitations and fixes.
+
