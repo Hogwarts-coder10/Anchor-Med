@@ -81,4 +81,4 @@ pip install flask flask-cors python-dotenv requests
 ## Contributors
 **[V SS Karthik]** - *Lead Engineer (Backend Architecture, B-Tree Engine, WAL Implementation)*
 * **[Mouktika]** - *Frontend Developer / UI Design*
-* **[Avinash]** - *WAL Implementation, Frontend Developer / UI Design*
+* **[Avinash]** - *Flask and WAL Implementation, Frontend Developer / UI Design*
