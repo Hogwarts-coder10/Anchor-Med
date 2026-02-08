@@ -1,64 +1,73 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process'); // Import the process spawner
+const { spawn, exec } = require('child_process');
 
-let pythonProcess = null; // Variable to keep track of the backend
+let mainWindow;
+let backendProcess;
 
-function startPythonBackend() {
-  let scriptPath;
+function startBackend() {
+  const isDev = !app.isPackaged;
   
-  if (app.isPackaged) {
-    // IN PRODUCTION: The exe is stored in a special 'resources' folder
-    scriptPath = path.join(process.resourcesPath, 'backend.exe');
-  } else {
-    // IN DEVELOPMENT: The exe is right here in the folder
-    scriptPath = path.join(__dirname, 'backend.exe');
-  }
+  // 1. DEFINE THE HOME BASE
+  // In Prod, this is the 'resources' folder inside the installed app
+  const homeDir = isDev ? __dirname : process.resourcesPath;
+  
+  // 2. DEFINE THE EXECUTABLE PATH
+  const backendPath = path.join(homeDir, 'backend.exe');
 
-  console.log("Launching backend from:", scriptPath);
+  console.log("Launching Backend...");
+  console.log("Home Directory (CWD):", homeDir);
+  console.log("Executable:", backendPath);
 
-  // Spawn the process (detached means it runs independently but we track it)
-  if (require('fs').existsSync(scriptPath)) {
-    pythonProcess = spawn(scriptPath, [], { stdio: 'ignore' });
-  } else {
-    console.error("Backend executable not found!");
-  }
+  // 3. CRITICAL: FORCE THE CWD
+  // This ensures Python looks for 'data/' inside 'resources/'
+  backendProcess = spawn(backendPath, [], { cwd: homeDir });
+
+  backendProcess.stdout.on('data', (data) => console.log(`[Python] ${data}`));
+  backendProcess.stderr.on('data', (data) => console.error(`[Python ERR] ${data}`));
+}
+
+// ASYNC KILLER 
+async function killBackend() {
+  if (!backendProcess) return;
+  console.log("[Anchor] Terminating Backend...");
+
+  return new Promise((resolve) => {
+    if (process.platform === 'win32') {
+      // /F = Force, /T = Tree, /B = No Window
+      exec(`taskkill /F /T /PID ${backendProcess.pid}`, () => {
+         console.log("[Anchor] Backend Killed via TaskKill");
+         resolve();
+      });
+    } else {
+      backendProcess.kill();
+      resolve();
+    }
+  });
 }
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
+  mainWindow = new BrowserWindow({
+    width: 1280, height: 800,
+    webPreferences: { nodeIntegration: true, contextIsolation: false },
+    // Fixes the "White Screen" if Python crashes early
+    backgroundColor: '#09090b' 
   });
 
-  const startUrl = process.env.ELECTRON_START_URL;
-  if (startUrl) {
-    mainWindow.loadURL(startUrl);
+  if (app.isPackaged) {
+    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
   } else {
-    mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+    mainWindow.loadURL('http://localhost:5173');
   }
 }
 
 app.whenReady().then(() => {
-  startPythonBackend(); // <--- START THE ENGINE
+  startBackend();
   createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
 });
 
-// KILL THE ENGINE WHEN APP CLOSES
-app.on('will-quit', () => {
-  if (pythonProcess) {
-    pythonProcess.kill(); 
-  }
-});
-
-app.on('window-all-closed', () => {
+// 5. PROPER ASYNC SHUTDOWN
+app.on('window-all-closed', async () => {
+  await killBackend(); // Wait for the kill to finish
   if (process.platform !== 'darwin') app.quit();
 });
