@@ -21,7 +21,7 @@ The core goal of this project was to implement **Database Internals** rather tha
 
 ### 🧠 1. Custom B-Tree Engine
 Instead of `import sqlite3`, I implemented a **B-Tree (Order t=3)** data structure in Python.
-* **Search Complexity:** $O(\log n)$
+* **Search Complexity:** O(log n)
 * **Disk Storage:** JSON-based serialization for portability.
 * **Logic:** Handles complex node splitting and merging algorithms manually.
 
