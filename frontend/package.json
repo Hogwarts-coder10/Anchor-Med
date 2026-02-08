@@ -14,14 +14,16 @@
     "electron:build": "electron-builder"
   },
   "build": {
-    "appId": "com.anchor.med",
+    "appId": "com.anchormed.app",
     "files": [
       "dist/**/*",
       "electron.cjs",
       "package.json"
     ],
-    "extraResources" : [
-      "backend.exe"
+    "extraResources": [
+      "backend.exe",
+      "./.env",
+      "./data/**"
     ],
     "win": {
       "target": "nsis"
@@ -29,6 +31,7 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.7",
+    "axios": "^1.13.4",
     "clsx": "^2.1.1",
     "framer-motion": "^12.29.2",
     "lucide-react": "^0.563.0",
