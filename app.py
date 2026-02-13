@@ -8,9 +8,10 @@ import atexit
 import sys
 from dotenv import load_dotenv
 
-# Import your B-Tree logic
+# Import your B-Tree logic and WAL-engine
 # (Ensure btree_logic.py is in the same folder)
 from btree_logic import BTree
+import wal_engine 
 
 load_dotenv()
 
@@ -54,8 +55,8 @@ atexit.register(cleanup_before_exit)
 # --- RECOVERY LOGIC ---
 if os.path.exists("data/recovery.wal"):
     # (Note: You'll need to implement recover_tree in your WAL logic later)
-    # print("AnchorMed Engine Restarting... Replaying Logs...")
-    # wal_engine.recover_tree(db)
+    print("AnchorMed Engine Restarting... Replaying Logs...")
+    wal_engine.recover_tree(db)
     pass 
 else:
     print("CORE: No existing logs found. Starting fresh.")
@@ -124,10 +125,14 @@ def update_item():
 
 # --- SHUTDOWN ROUTE (The Trigger) ---
 def shutdown_server():
-    """ Background task to stop the server after a delay."""
+    """Background task to stop the server after a delay."""
     print("CORE: Shutdown sequence initiated...")
     time.sleep(1)  # Wait 1 second for frontend to receive response
     
+    # Explicitly saving the checkpoint only when the buttom is clicked.
+    print("CORE: Taking Snapshot before shutdown....")
+    wal_engine.create_checkpoint(db)
+
     # Simulate Ctrl+C to trigger the atexit hook
     os.kill(os.getpid(), signal.SIGINT)
 
