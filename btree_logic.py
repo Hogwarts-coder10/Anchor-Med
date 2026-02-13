@@ -111,10 +111,14 @@ class BTree:
             i += 1
             
             # If the found child is full, split it before descending.
-            if len(x.children[i].keys) == (2 * self.t) - 1:
+           if len(x.children[i].keys) == (2 * self.t) - 1:
                 self.split_child(x, i)
-                # After split, the middle key moves up. Determine which of the two
-                # new children the key 'k' belongs to.
+                
+                # CRITICAL FIX: Check the key that just bubbled up!
+                if k == x.keys[i]:
+                    x.values[i] = v  # after finding it, just update the value and exit
+                    return 
+                
                 if k > x.keys[i]:
                     i += 1
             
@@ -230,3 +234,4 @@ class BTree:
             # 3. Traverse the last remaining child (rightmost)
             if not node.leaf:
                 self._traverse_node(node.children[len(node.keys)], results)
+
