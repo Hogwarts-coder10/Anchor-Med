@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AlertCircle, Package, Pill, RefreshCw, Search, Plus, Trash2, LogOut, Calendar, AlertTriangle, CheckCircle, Activity, LayoutDashboard, Zap } from "lucide-react";
+import { AlertCircle, Package, Pill, RefreshCw, Search, Plus, Trash2, LogOut, Calendar, AlertTriangle, CheckCircle, Activity, LayoutDashboard, Zap, Power } from "lucide-react";
 
 function App() {
   // --- AUTH ---
@@ -178,6 +178,28 @@ function App() {
     }
   };
 
+  // --- SYSTEM CONTROL (Shutdown Logic) ---
+  const handleShutdown = async () => {
+    if (!window.confirm("⚠️ SYSTEM SHUTDOWN\n\nAre you sure you want to stop the Anchor Engine?")) return;
+    
+    setStatus({ type: "info", message: "Stopping Engine..." });
+    setLoading(true);
+
+    try {
+      await fetch("http://127.0.0.1:5000/api/shutdown", { method: "POST" });
+      setStatus({ type: "success", message: "System Offline. Goodbye." });
+      
+      // Close window after a short delay
+      setTimeout(() => {
+        window.close(); 
+      }, 1500);
+
+    } catch (e) {
+      setStatus({ type: "error", message: "Shutdown signal failed" });
+      setLoading(false);
+    }
+  };
+
   // --- LOGIN SCREEN ---
   if (!isLoggedIn) return (
     <div className="flex h-screen w-full items-center justify-center bg-zinc-950 relative overflow-hidden">
@@ -310,13 +332,23 @@ function App() {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-white/5">
+        {/* SYSTEM ACTIONS FOOTER */}
+        <div className="p-4 border-t border-white/5 space-y-2">
           <button 
             onClick={() => setIsLoggedIn(false)}
-            className="w-full flex items-center gap-2 px-3 py-2 text-red-400/70 hover:bg-red-500/10 hover:text-red-400 rounded-lg text-sm transition-all"
+            className="w-full flex items-center gap-2 px-3 py-2 text-zinc-500 hover:bg-white/5 hover:text-zinc-300 rounded-lg text-sm transition-all"
           >
             <LogOut size={16} />
             <span>Disconnect</span>
+          </button>
+
+          {/* SHUTDOWN BUTTON */}
+          <button 
+            onClick={handleShutdown}
+            className="w-full flex items-center gap-2 px-3 py-2 text-red-400/60 hover:bg-red-500/10 hover:text-red-400 rounded-lg text-sm transition-all border border-transparent hover:border-red-500/20"
+          >
+            <Power size={16} />
+            <span>Shutdown System</span>
           </button>
         </div>
       </div>
