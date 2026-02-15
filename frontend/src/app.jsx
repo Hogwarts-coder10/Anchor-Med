@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AlertCircle, Package, Pill, RefreshCw, Search, Plus, Trash2, LogOut, Calendar, AlertTriangle, CheckCircle, Activity, LayoutDashboard, Zap, Power } from "lucide-react";
+import CONFIG from "./config.js";
 
 function App() {
   // --- AUTH ---
@@ -59,7 +60,7 @@ function App() {
     setLoading(true);
     
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/login", {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/login` ,{
         method: "POST", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }) 
@@ -88,7 +89,7 @@ function App() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/view_all");
+      const res = await fetch(`${CONFIG.API_BASE_URL}/view_all`);
       const data = await res.json();
       
       if (data.success) {
@@ -116,13 +117,13 @@ function App() {
     if (!isUpdate && !validateForm()) return;
     
     setLoading(true);
-    const endpoint = isUpdate ? "/api/update" : "/api/add";
+    const endpoint = isUpdate ? "/update" : "/add";
     const payload = isUpdate 
       ? { batch_id: tId, new_qty: tQty } 
       : { batch_id: batchId, med_name: medName, qty: parseInt(qty), expiry };
 
     try {
-      const res = await fetch(`http://127.0.0.1:5000${endpoint}`, {
+      const res = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, {
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify(payload)
@@ -161,7 +162,7 @@ function App() {
     setStatus({ type: "info", message: `Connecting to ${targetIp}...` });
     
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/sync", {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/sync`, {
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({ target_ip: targetIp })
@@ -186,7 +187,7 @@ function App() {
     setLoading(true);
 
     try {
-      await fetch("http://127.0.0.1:5000/api/shutdown", { method: "POST" });
+      await fetch(`${CONFIG.API_BASE_URL}/shutdown`, { method: "POST" });
       setStatus({ type: "success", message: "System Offline. Goodbye." });
       
       // Close window after a short delay
