@@ -3,7 +3,7 @@
 
 > **A local-first, crash-resilient medical inventory system powered by a custom B-Tree database engine.**
 
-![AnchorMed Status](https://img.shields.io/badge/Status-Beta%20v2.1-orange?style=for-the-badge)
+![AnchorMed Status](https://img.shields.io/badge/Status-Stable%20v3.0.0-green?style=for-the-badge)
 ![Tech Stack](https://img.shields.io/badge/Stack-Electron%20%7C%20React%20%7C%20Python-blue?style=for-the-badge)
 ![Database](https://img.shields.io/badge/Engine-Custom%20B--Tree%20%2B%20WAL-red?style=for-the-badge)
 
@@ -35,17 +35,17 @@ To prevent data corruption during crashes:
 * **Architecture:** The UI (React) runs in Electron, while the Logic (B-Tree) runs as a spawned Python child process.
 * **Lifecycle Management:** Implemented a robust "Zombie Killer" routine. When the main Electron window closes, it explicitly hunts down and terminates the Python background process to prevent memory leaks.
 
+### 🌐 4. P2P Network Synchronisation
+* Implemented a "Two-Step Handshake" protocol allowing multiple instances of AnchorMed to discover each other on a local Wi-Fi network and merge B-Tree states without a central server.
 ---
 
-## 📸 Screenshots
 
-*(Add your screenshots here later - e.g., The Dashboard, The Inventory List)*
 
----
-
-## 📥 Download & Install (For Users)
-
-**[👉 Download the latest Windows Portable Version (v2.1)](./releases)**
+## 📥 Download & Install
+**[👉 Download the latest Windows Installer (v3.0.0)](./releases)**
+1. Go to the **Releases** tab.
+2. Download `Anchor-Med Setup 3.0.0.exe`.
+3. Run the installer and follow the setup wizard.
 
 1.  Go to the **Releases** tab.
 2.  Download `AnchorMed-v2.1-Portable.zip`.
