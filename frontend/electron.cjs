@@ -8,20 +8,20 @@ let backendProcess;
 function startBackend() {
   const isDev = !app.isPackaged;
   
-  // 1. DEFINE THE HOME BASE
-  // In Prod, this is the 'resources' folder inside the installed app
-  const homeDir = isDev ? __dirname : process.resourcesPath;
-  
-  // 2. DEFINE THE EXECUTABLE PATH
-  const backendPath = path.join(homeDir, 'backend.exe');
+  // 1. DEFINE THE EXECUTABLE PATH
+  // In dev: It's right next to this file in the frontend folder
+  // In prod: It gets packed into the hidden resources folder
+  const backendPath = isDev 
+    ? path.join(__dirname, 'backend.exe')
+    : path.join(process.resourcesPath, 'backend.exe');
 
   console.log("Launching Backend...");
-  console.log("Home Directory (CWD):", homeDir);
   console.log("Executable:", backendPath);
 
-  // 3. CRITICAL: FORCE THE CWD
-  // This ensures Python looks for 'data/' inside 'resources/'
-  backendProcess = spawn(backendPath, [], { cwd: homeDir });
+  // 2. CRITICAL: FORCE THE CWD
+  // Lock the working directory to wherever the executable lives
+  const workingDir = path.dirname(backendPath);
+  backendProcess = spawn(backendPath, [], { cwd: workingDir });
 
   backendProcess.stdout.on('data', (data) => console.log(`[Python] ${data}`));
   backendProcess.stderr.on('data', (data) => console.error(`[Python ERR] ${data}`));
@@ -49,16 +49,12 @@ async function killBackend() {
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280, height: 800,
+    icon: path.join(__dirname, 'icon.ico'), // MATCHED TO PACKAGE.JSON
     webPreferences: { nodeIntegration: true, contextIsolation: false },
-    // Fixes the "White Screen" if Python crashes early
     backgroundColor: '#09090b' 
   });
 
-  if (app.isPackaged) {
-    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
-  } else {
-    mainWindow.loadURL('http://localhost:5173');
-  }
+  mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
 }
 
 app.whenReady().then(() => {
