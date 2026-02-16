@@ -5,11 +5,9 @@ import signal
 import threading
 import time
 import atexit
-import sys
 from dotenv import load_dotenv
 
 # Import your B-Tree logic and WAL-engine
-# (Ensure btree_logic.py is in the same folder)
 from btree_logic import BTree
 import wal_engine 
 
@@ -28,39 +26,19 @@ CORS(app)
 # Initialize the B-Tree with degree t=3
 db = BTree(t=3)
 
-# Change working directory to the script's location
-# This ensures relative paths work regardless of where you run the script from
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+# Let wal_engine handle all the pathing logic! We just call recover immediately.
+print("CORE: Booting AnchorMed Engine...")
+wal_engine.recover_tree(db)
 
-# Ensure data directory exists
-if not os.path.exists("data"):
-    print("CORE: Creating new data folder...")
-    os.makedirs("data")
-
-# --- GRACEFUL SHUTDOWN HOOK (The Safety Net) ---
+# --- GRACEFUL SHUTDOWN HOOK ---
 def cleanup_before_exit():
-    """
-    Runs automatically when the server stops (via Ctrl+C or API).
-    Ensures the WAL is safe and logs the shutdown.
-    """
     print("\n--------------------------------------------------")
     print("CORE: Stopping Anchor Engine...")
     print("WAL: All transactions are anchored to disk.")
     print("CORE: Shutdown Complete.")
     print("--------------------------------------------------")
 
-# Register the hook immediately
 atexit.register(cleanup_before_exit)
-
-# --- RECOVERY LOGIC ---
-if os.path.exists("data/recovery.wal"):
-    # (Note: You'll need to implement recover_tree in your WAL logic later)
-    print("AnchorMed Engine Restarting... Replaying Logs...")
-    wal_engine.recover_tree(db)
-    pass 
-else:
-    print("CORE: No existing logs found. Starting fresh.")
-
 
 # --- 3. HELPER FUNCTIONS ---
 def validate_login(data):
@@ -80,7 +58,6 @@ def login():
 
 @app.route("/api/view_all", methods=["GET"])
 def view_all():
-    # Convert B-Tree data to JSON-friendly format
     inventory = db.get_all_data() 
     return jsonify({"success": True, "inventory": inventory}), 200
 
@@ -89,18 +66,20 @@ def add_item():
     data = request.json
     batch_id = data.get("batch_id")
     
-    # Basic Validation
     if not batch_id:
         return jsonify({"success": False, "message": "Batch ID required"}), 400
 
-    # Insert into B-Tree (Memory)
-    db.insert(batch_id, {
+    details = {
         "name": data.get("med_name"),
         "qty": data.get("qty"),
         "expiry": data.get("expiry")
-    })
+    }
+
+    # 1. Insert into B-Tree (Memory)
+    db.insert(batch_id, details)
     
-    # TODO: Write to WAL (Disk) -> We will add this in the next step
+    # 2. Write to WAL (Disk) so it survives a crash!
+    wal_engine.log_transaction(batch_id, details)
     
     return jsonify({"success": True, "message": "Batch anchored successfully"}), 200
 
@@ -113,34 +92,83 @@ def update_item():
     if not batch_id or new_qty is None:
          return jsonify({"success": False, "message": "Missing data"}), 400
     
-    # Search for the item
     current_data = db.search(batch_id)
     if current_data:
-        # Update logic
         current_data["qty"] = new_qty
-        # TODO: Append update to WAL
+        # Log the update to disk!
+        wal_engine.log_transaction(batch_id, current_data)
         return jsonify({"success": True, "message": "Stock updated"}), 200
     
     return jsonify({"success": False, "message": "Batch ID not found"}), 404
 
-# --- SHUTDOWN ROUTE (The Trigger) ---
-def shutdown_server():
-    """Background task to stop the server after a delay."""
-    print("CORE: Shutdown sequence initiated...")
-    time.sleep(1)  # Wait 1 second for frontend to receive response
+@app.route("/api/delete", methods=["POST"])
+def delete_item():
+    data = request.json
+    batch_id = data.get("batch_id")
+
+    if not batch_id:
+         return jsonify({"success": False, "message": "Missing data"}), 400
     
-    # Explicitly saving the checkpoint only when the buttom is clicked.
+    current_data = db.search(batch_id)
+    if current_data:
+        current_data["qty"] = 0
+        # Log the soft-delete to disk!
+        wal_engine.log_transaction(batch_id, current_data)
+        return jsonify({"success": True, "message": "Record deleted"}), 200
+        
+    return jsonify({"success": False, "message": "Batch ID not found"}), 404
+
+@app.route("/api/sync", methods=["POST"])
+def sync_inventory():
+    data = request.json
+    incoming_inventory = data.get("inventory", [])
+    
+    if not incoming_inventory:
+        return jsonify({"success": False, "message": "No data received"}), 400
+
+    sync_count = 0
+    
+    for item in incoming_inventory:
+        batch_id = item.get("batch_id")
+        details = item.get("details")
+        
+        if not batch_id or not details:
+            continue
+            
+        local_item = db.search(batch_id)
+        
+        if not local_item:
+            # NEW ITEM: Insert and log
+            db.insert(batch_id, details)
+            wal_engine.log_transaction(batch_id, details)
+            sync_count += 1
+        else:
+            # EXISTING ITEM: Overwrite if quantity differs
+            if local_item["qty"] != details["qty"]:
+                local_item["qty"] = details["qty"]
+                wal_engine.log_transaction(batch_id, local_item)
+                sync_count += 1
+
+    return jsonify({
+        "success": True, 
+        "message": f"Merged {sync_count} records."
+    }), 200
+
+# --- SHUTDOWN ROUTE ---
+def shutdown_server():
+    print("CORE: Shutdown sequence initiated...")
+    time.sleep(1) 
+    
     print("CORE: Taking Snapshot before shutdown....")
     wal_engine.create_checkpoint(db)
-
-    # Simulate Ctrl+C to trigger the atexit hook
     os.kill(os.getpid(), signal.SIGINT)
 
 @app.route("/api/shutdown", methods=["POST"])
 def shutdown():
-    # Run the shutdown timer in a separate thread so we can return 200 OK first
     threading.Thread(target=shutdown_server).start()
     return jsonify({"success": True, "message": "Server shutting down..."}), 200
 
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # host="0.0.0.0" is required for other computers to talk to this computer
+    app.run(host="0.0.0.0", debug=True, port=5000)
