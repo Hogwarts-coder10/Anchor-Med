@@ -60,7 +60,7 @@ If you want to modify the B-Tree logic or the React frontend:
 ### 1. Setup
 ```bash
 # Clone the repository
-git clone [https://github.com/YOUR_USERNAME/anchor-med.git](https://github.com/YOUR_USERNAME/anchor-med.git)
+git clone [https://github.com/YOUR_USERNAME/Anchor-Med.git](https://github.com/YOUR_USERNAME/Anchor-Med.git)
 cd anchor-med
 
 # Install Frontend Dependencies
