@@ -1,14 +1,22 @@
 import os
 import json
+import sys
 
-# Get the directory where THIS file (wal_engine.py) is located
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+# 1. Get the current user's home directory (Works on Windows/Mac/Linux)
+HOME_DIR = os.path.expanduser("~")
+
+# 2. Hardcode the database path straight to their Documents folder!
+DATA_DIR = os.path.join(HOME_DIR, "Documents", "AnchorMedData")
+
+# 3. Create the folder if it doesn't exist
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# 4. Set the absolute file paths
 WAL_FILE = os.path.join(DATA_DIR, "recovery.wal")
 CHECKPOINT_FILE = os.path.join(DATA_DIR, "checkpoint.json")
 
-# Ensure the 'data' folder exists
-os.makedirs(DATA_DIR, exist_ok=True)
+print(f"--- ENGINE INITIALIZED ---")
+print(f"DATABASE LOCKED TO: {DATA_DIR}")
 
 def log_transaction(key: str, value: dict) -> None:
     """
@@ -49,7 +57,7 @@ def recover_tree(btree_instance) -> None:
     """
     RESTORE PROCEDURE:
     1. Load 'checkpoint.json' (The Base)
-    2. Replay 'recovery.wal' (The Updates since the checkpoint)
+    2. Replay 'recovery.wal' (The Updates since checkpoint)
     """
     count = 0
     
