@@ -45,12 +45,7 @@ To prevent data corruption during crashes:
 1. Go to the **Releases** tab.
 2. Download `Anchor-Med Setup 3.0.0.exe`.
 3. Run the installer and follow the setup wizard.
-
-1.  Go to the **Releases** tab.
-2.  Download `AnchorMed-v2.1-Portable.zip`.
-3.  Extract the folder.
-4.  Run `AnchorMed.exe`.
-    * *Note: No Python or Node.js installation required.*
+* *Note: No Python or Node.js installation required.*
 
 ---
 
