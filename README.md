@@ -42,7 +42,6 @@ To prevent data corruption during crashes:
 
 
 ## 📥 Download & Install
-**[👉 Download the latest Windows Installer (v3.0.0)](./releases)**
 1. Go to the **Releases** tab.
 2. Download `Anchor-Med Setup 3.0.0.exe`.
 3. Run the installer and follow the setup wizard.
