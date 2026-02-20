@@ -7,7 +7,7 @@ This roadmap outlines the path to pushing Anchor-Med beyond standard CRUD operat
 ### Database Internals
 - [ ] **Transaction Rollbacks:** Implement boundary logic to safely abort and roll back partial batch operations if an insertion fails (maintaining ACID compliance).
 - [ ] **Automated Chaos Testing Suite:** Build a Python script to continuously blast the B-Tree with rapid insertions while randomly triggering `os.kill()` to definitively prove WAL recovery reliability.
-- [ ] **Secondary B-Tree Indexing:** Engineer a supplementary B-Tree alongside the primary one specifically for sorting metadata (e.g., Expiration Dates) to allow for instant $O(\log n)$ range queries without scanning every node.
+- [ ] **Secondary B-Tree Indexing:** Engineer a supplementary B-Tree alongside the primary one specifically for sorting metadata (e.g., Expiration Dates) to allow for instant O(log n) range queries without scanning every node.
 
 ### P2P Sync & Distributed Systems
 - [ ] **Conflict Resolution Engine:** Upgrade the P2P merge logic. Implement a versioning or "last-write-wins" timestamp protocol to resolve collisions gracefully when two disconnected clinics edit the same medicine count.
