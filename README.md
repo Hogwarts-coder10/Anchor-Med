@@ -1,4 +1,4 @@
-# ⚓ AnchorMed
+# ⚓ AnchorMed 
 
 > **A local-first, crash-resilient medical inventory system powered by a custom B-Tree database engine.**
 
