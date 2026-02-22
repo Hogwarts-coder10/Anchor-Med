@@ -111,3 +111,6 @@ full duplicate-key enforcement) They are under active development.
 
 Please have a look at the Issues tab for detailed, tracked limitations and fixes.
 
+## 📦Preview
+<img width="1918" height="1020" alt="Screenshot 2026-02-22 103808" src="https://github.com/user-attachments/assets/498b65ab-bea7-41da-8942-423a5508684b" />
+
