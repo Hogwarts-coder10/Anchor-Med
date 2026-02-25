@@ -1,3 +1,5 @@
+from typing import Any
+
 class BTreeNode:
     """
     Represents a single node within the B-Tree structure.
@@ -11,11 +13,11 @@ class BTreeNode:
         values (list): List of values (e.g., Medicine Details) corresponding to the keys.
         children (list): List of BTreeNode objects representing the children of this node.
     """
-    def __init__(self, leaf=False):
-        self.leaf = leaf
-        self.keys = []
-        self.values = []
-        self.children = []
+    def __init__(self, leaf: bool = False) -> None:
+        self.leaf: bool = leaf
+        self.keys: list[Any] = []
+        self.values: list[Any] = []
+        self.children: list['BTreeNode'] = []
 
 class BTree:
     """
@@ -31,17 +33,17 @@ class BTree:
                  - Every node can have at most 2*t - 1 keys.
         root (BTreeNode): The root node of the B-Tree.
     """
-    def __init__(self, t):
+    def __init__(self, t: int) -> None:
         """
         Initializes an empty B-Tree.
 
         Args:
             t (int): The minimum degree 't'. A higher 't' results in a flatter tree.
         """
-        self.root = BTreeNode(True)
-        self.t = t
+        self.root: BTreeNode = BTreeNode(True)
+        self.t: int = t
 
-    def insert(self, k, v):
+    def insert(self, k: Any, v: Any) -> None:
         """
         Inserts a new key-value pair into the B-Tree.
         
@@ -53,10 +55,10 @@ class BTree:
             k: The key to insert (must be comparable, e.g., integer or string).
             v: The value associated with the key.
         """
-        root = self.root
+        root: BTreeNode = self.root
         # Check if the root is full (contains 2*t - 1 keys)
         if len(root.keys) == (2 * self.t) - 1:
-            temp = BTreeNode()
+            temp: BTreeNode = BTreeNode()
             self.root = temp
             # Make the old root a child of the new root
             temp.children.insert(0, root)
@@ -67,7 +69,7 @@ class BTree:
         else:
             self.insert_non_full(root, k, v)
 
-    def insert_non_full(self, x, k, v):
+    def insert_non_full(self, x: BTreeNode, k: Any, v: Any) -> None:
         """
         Helper method to insert a key into a node that is not full.
         
@@ -79,7 +81,7 @@ class BTree:
             k: The key to insert.
             v: The value to insert.
         """
-        i = len(x.keys) - 1
+        i: int = len(x.keys) - 1
         
         # --- NEW LOGIC: Check for Duplicates / Update Existing ---
         # Scan to see if 'k' is already in this node.
@@ -111,7 +113,7 @@ class BTree:
             i += 1
             
             # If the found child is full, split it before descending.
-           if len(x.children[i].keys) == (2 * self.t) - 1:
+            if len(x.children[i].keys) == (2 * self.t) - 1:
                 self.split_child(x, i)
                 
                 # CRITICAL FIX: Check the key that just bubbled up!
@@ -126,7 +128,7 @@ class BTree:
             self.insert_non_full(x.children[i], k, v)
 
             
-    def split_child(self, x, i):
+    def split_child(self, x: BTreeNode, i: int) -> None:
         """
         Splits a full child node into two nodes and promotes the median key to the parent.
         
@@ -137,14 +139,14 @@ class BTree:
             x (BTreeNode): The parent node.
             i (int): The index of the child in x.children that is full and needs splitting.
         """
-        t = self.t
-        y = x.children[i] # The full child node
-        z = BTreeNode(y.leaf) # The new node to hold the second half of y's keys
+        t: int = self.t
+        y: BTreeNode = x.children[i] # The full child node
+        z: BTreeNode = BTreeNode(y.leaf) # The new node to hold the second half of y's keys
         
         # 1. Save the median data BEFORE truncating y
         # The key at index t-1 is the median (since indices are 0-based and length is 2t-1)
-        median_key = y.keys[t-1]
-        median_val = y.values[t-1]
+        median_key: Any = y.keys[t-1]
+        median_val: Any = y.values[t-1]
 
         # 2. Move second half of keys/values to z
         # Keys from index t to end go to z
@@ -169,7 +171,7 @@ class BTree:
         x.keys.insert(i, median_key)
         x.values.insert(i, median_val)
 
-    def search(self, k, x=None):
+    def search(self, k: Any, x: BTreeNode | None = None) -> Any | None:
         """
         Searches for a specific key in the B-Tree.
 
@@ -180,8 +182,9 @@ class BTree:
         Returns:
             The value associated with key 'k' if found, otherwise None.
         """
-        if x is None: x = self.root
-        i = 0
+        if x is None: 
+            x = self.root
+        i: int = 0
         
         # Find the first key greater than or equal to k
         while i < len(x.keys) and k > x.keys[i]:
@@ -198,7 +201,7 @@ class BTree:
         # Recurse into the appropriate child
         return self.search(k, x.children[i])
     
-    def get_all_data(self):
+    def get_all_data(self) -> list[dict[str, Any]]:
         """
         Retrieves all key-value pairs stored in the tree.
         
@@ -206,11 +209,11 @@ class BTree:
             list: A list of dictionaries, where each dict contains 'batch_id' and 'details'.
                   The list is sorted by batch_id (in-order traversal).
         """
-        results = []
+        results: list[dict[str, Any]] = []
         self._traverse_node(self.root, results)
         return results
 
-    def _traverse_node(self, node, results):
+    def _traverse_node(self, node: BTreeNode | None, results: list[dict[str, Any]]) -> None:
         """
         Helper method to perform an in-order traversal of the tree.
         
@@ -234,4 +237,3 @@ class BTree:
             # 3. Traverse the last remaining child (rightmost)
             if not node.leaf:
                 self._traverse_node(node.children[len(node.keys)], results)
-
