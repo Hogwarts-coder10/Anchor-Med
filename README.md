@@ -105,7 +105,7 @@ Automated crash-recovery tests are planned as a future improvement.
 
 ## Known Limitations
 
-Some advanced features (checkpointing, transaction boundaries, and
+Some advanced features (transaction boundaries, and
 full duplicate-key enforcement) They are under active development.
 
 Please have a look at the Issues tab for detailed, tracked limitations and fixes.
